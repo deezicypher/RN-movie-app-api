@@ -7,9 +7,9 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/movies', movieRoutes)
-app.all('*', (req: Request, res: Response) => {
-    res.status(404).json({ error: "Route Not Found" });
-  }); 
+app.all(/(.*)/, (req: Request, res: Response) => {
+  res.status(404).json({ error: "Route Not Found" });
+});
 
 
 export default app

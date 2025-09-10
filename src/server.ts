@@ -32,7 +32,7 @@ const startDB = async () => {
             title TEXT NOT NULL,
             count INTEGER NOT NULL,
             poster_url TEXT NOT NULL,
-            UNIQUE (search_term, movie_id
+            UNIQUE (search_term, movie_id)
 );
     `
         await pool.query(createTableQuery)
