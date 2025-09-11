@@ -1,9 +1,10 @@
 import {Request, Response} from 'express'
 import pool from '../config/db'
-import { validationResult } from 'express-validator'
+import { param, validationResult } from 'express-validator'
 
 
 export const newMovie = async (req:Request, res:Response) => {
+    
 
     const {title,adult,backdrop_path,genre_ids,original_language,
         original_title,overview,popularity,poster_path,release_date,video,vote_average,vote_count} = req.body
@@ -45,9 +46,25 @@ export const newMovie = async (req:Request, res:Response) => {
 
 
 export const ShowIndex = async (req:Request, res:Response) => {
-    const q = "SELECT * FROM movies ORDER BY created_at DESC"
-    const {rows} = await pool.query(q)
-    res.send(rows[0])
+    const {searchId} = req.query
+    let q = "SELECT * FROM movies "
+    let params: string [] = []
+    let conditions: string[] = []
+    let paramIndex = 1 
+
+    if(searchId && String(searchId).trim()){
+      conditions.push(` title ILIKE $${paramIndex}`)
+      params.push(`%${searchId}%`)
+      paramIndex++
+    }
+
+    if(conditions.length > 0){
+      q += "WHERE " + conditions.join(" AND ")
+    }
+
+    q+=" ORDER BY id DESC"
+    const {rows} = await pool.query(q,params)
+    res.send(rows)
 }
 
 export const ShowMovie = async (req:Request, res:Response) => {
