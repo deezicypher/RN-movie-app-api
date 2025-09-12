@@ -13,6 +13,8 @@ export const newMovie = async (req:Request, res:Response) => {
     if(!errors.isEmpty()) {
         const firstError = errors.array().map(err => err.msg)[0]
         res.status(422).json({error:firstError})
+        console.error(firstError)
+        return
     }
 
     const q = `
@@ -74,4 +76,32 @@ export const ShowMovie = async (req:Request, res:Response) => {
 
     res.send(rows[0])
     return
+}
+
+export const updateSearchCount = async (req:Request, res:Response) => {
+  
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+      const firstError = errors.array().map(err => err.msg)[0]
+      res.status(422).json({error:firstError})
+      console.error(firstError)
+      return
+    }
+
+    const {query,id,title,poster_path} = req.body
+
+    try{
+    const q = "SELECT * from trending_movies WHERE search_term = $1"
+    const {rows} = await pool.query(q,[query])
+    if(rows.length > 0) {
+      const updateQuery = "UPDATE trending_movies SET count = count + 1 WHERE movie_id = $1 AND count = $2"
+      await pool.query(updateQuery,[id,rows[0].count])
+      return
+    }
+    const addQuery = "INSERT INTO trending_movies (search_term, movie_id,title,count,poster_url) VALUES ($1,$2,$3,$4,$5)"
+    await pool.query(addQuery,[query,id,title,0,poster_path])
+    return
+  }catch(err){
+    console.error(err)
+  }
 }
